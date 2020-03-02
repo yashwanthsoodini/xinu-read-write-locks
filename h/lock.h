@@ -16,29 +16,30 @@
 #define READER  1   /* lock holder type reader */
 #define WRITER  2   /* lock holder type writer */
 
-typedef struct proclist{
+typedef struct proclist{    /* a node in a linked list of processes */
     int pid;
     struct proclist *next;
 } procnode;
 
-struct  lentry  {       /* lock table entry                     */
-    char lstate;        /* the state LFREE or LUSED             */
-    int lqhead;         /* q index of head of wait list         */
-    int lqtail;         /* q index of tail of wait list         */
-    int lprio;          /* max priority among waiting processes */
-    procnode *lholders; /* head of lock holders list            */
-    int lholdtype;      /* the type READER or WRITER            */
+struct  lentry  {       /* lock table entry                                 */
+    char lstate;        /* the state LFREE or LUSED                         */
+    int lqhead;         /* q index of head of wait list                     */
+    int lqtail;         /* q index of tail of wait list                     */
+    int lprio;          /* max priority among waiting processes             */
+    procnode *lholders; /* head of list of processes that now hold the lock */
+    procnode *lprevhld; /* head of list of processes that released the lock */
+    int lholdtype;      /* the type READER or WRITER of lock holder(s)      */
 };
 extern struct lentry locktab[];
 extern int nextlock;
 
-#define isbadlock(l) (l<0 || l>=NLOCKS)
-
-#endif
-
 #include <kernel.h>
 
 SYSCALL lcreate(void)
-SYSCALL ldelete(int lock)
-SYSCALL lock(int lock, int type, int priority)
-SYSCALL releaseall(int numlocks, int lock1, ...)
+SYSCALL ldelete(int ldes)
+SYSCALL lock(int ldes, int type, int priority)
+SYSCALL releaseall(int numlocks, int ldes1, ...)
+
+#define isbadlock(l) (l<0 || l>=NLOCKS)
+
+#endif

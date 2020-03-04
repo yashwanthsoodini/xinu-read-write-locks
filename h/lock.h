@@ -7,12 +7,14 @@
 #define NLOCKS  50  /* number of locks, if not defined */
 #endif
 
-#define READ    1   /* lock type read */
+#define READ    1   /* lock type read  */
 #define WRITE   2   /* lock type write */
+
 
 #define	LFREE	'\01'		/* this semaphore is free		*/
 #define	LUSED	'\02'		/* this semaphore is used		*/
 
+#define NONE    0   /* lock held by none       */
 #define READER  1   /* lock holder type reader */
 #define WRITER  2   /* lock holder type writer */
 
@@ -28,7 +30,7 @@ struct  lentry  {       /* lock table entry                                 */
     int lprio;          /* max priority among waiting processes             */
     procnode *lholders; /* head of list of processes that now hold the lock */
     procnode *lprevhld; /* head of list of processes that released the lock */
-    int lholdtype;      /* the type READER or WRITER of lock holder(s)      */
+    int lholdtype;      /* the type READER,WRITER or NONE of lock holder(s) */
 };
 extern struct lentry locktab[];
 extern int nextlock;

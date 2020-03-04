@@ -9,11 +9,17 @@
 #define	NQENT		NPROC + NSEM + NSEM + 4	/* for ready & sleep	*/
 #endif
 
+#define WAITNONE	0	/* not waiting for any lock	*/
+#define WAITREAD  	1   /* lock wait type reader 	*/
+#define WAITWRITE  	2   /* lock wait type writer 	*/
+
 struct	qent	{		/* one for each process plus two for	*/
 				/* each list				*/
-	int	qkey;		/* key on which the queue is ordered	*/
-	int	qnext;		/* pointer to next process or tail	*/
-	int	qprev;		/* pointer to previous process or head	*/
+	int	qkey;			/* key on which the queue is ordered		 */
+	int qlwaittype;		/* the type WAITREAD, WAITWRITE, or WAITNONE */
+	int	qnext;			/* pointer to next process or tail			 */
+	int	qprev;			/* pointer to previous process or head		 */
+	unsigned long qwst;	/* time when proc was added to wait q		 */
 };
 
 extern	struct	qent q[];

@@ -68,7 +68,7 @@ struct	pentry	{
 	int pinh;				/* inherited process priority	*/
 	int plocks;				/* locks currently held		 	*/
 	int pwaitlock;			/* lock currently waiting for	*/
-	locknode *pdellocks		/* locks prev held, now deleted */
+	locknode *pdellocks;		/* locks prev held, now deleted */
 };
 
 

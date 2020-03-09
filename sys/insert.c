@@ -3,7 +3,9 @@
 #include <conf.h>
 #include <kernel.h>
 #include <q.h>
+#include <sleep.h>
 
+extern unsigned long ctr1000;
 /*------------------------------------------------------------------------
  * insert.c  --  insert an process into a q list in key order
  *------------------------------------------------------------------------
@@ -19,6 +21,7 @@ int insert(int proc, int head, int key)
 	q[proc].qnext = next;
 	q[proc].qprev = prev = q[next].qprev;
 	q[proc].qkey  = key;
+	q[proc].qwst = ctr1000;
 	q[prev].qnext = proc;
 	q[next].qprev = proc;
 	return(OK);

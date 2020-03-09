@@ -28,6 +28,12 @@
 #define	PRWAIT		'\007'		/* process is on semaphore queue*/
 #define	PRTRECV		'\010'		/* process is timing a receive	*/
 
+/* process lock wait type constants */
+
+#define NONE	0	/* not waiting for any lock	*/
+#define READ  	1   /* lock wait type reader 	*/
+#define WRITE  	2   /* lock wait type writer 	*/
+
 /* miscellaneous process definitions */
 
 #define	PNMLEN		16		/* length of process "name"	*/
@@ -46,29 +52,30 @@ typedef struct locklist{	/* a node in a linked list of locks */
 /* process table entry */
 
 struct	pentry	{
-	char	pstate;			/* process state: PRCURR, etc.	*/
-	int	pprio;				/* process priority				*/
-	int	pesp;				/* saved stack pointer			*/
-	STATWORD pirmask;		/* saved interrupt mask			*/
-	int	psem;				/* semaphore if process waiting	*/
-	WORD	pmsg;			/* message sent to this process	*/
-	char	phasmsg;		/* nonzero iff pmsg is valid	*/
-	WORD	pbase;			/* base of run time stack		*/
-	int	pstklen;			/* stack length					*/
-	WORD	plimit;			/* lowest extent of stack		*/
-	char	pname[PNMLEN];	/* process name					*/
-	int	pargs;				/* initial number of arguments	*/
-	WORD	paddr;			/* initial code address			*/
-	WORD	pnxtkin;		/* next-of-kin notified of death*/
-	Bool	ptcpumode;		/* proc is in TCP urgent mode	*/
-	short	pdevs[2];		/* devices to close upon exit	*/
-	int	fildes[_NFILE];		/* file - device translation	*/
-	int	ppagedev;			/* pageing dgram device			*/
-	int	pwaitret;			/* return value from wait	 	*/
-	int pinh;				/* inherited process priority	*/
-	int plocks;				/* locks currently held		 	*/
-	int pwaitlock;			/* lock currently waiting for	*/
-	locknode *pdellocks;		/* locks prev held, now deleted */
+	char	pstate;			/* process state: PRCURR, etc.		*/
+	int	pprio;				/* process priority					*/
+	int	pesp;				/* saved stack pointer				*/
+	STATWORD pirmask;		/* saved interrupt mask				*/
+	int	psem;				/* semaphore if process waiting		*/
+	WORD	pmsg;			/* message sent to this process		*/
+	char	phasmsg;		/* nonzero iff pmsg is valid		*/
+	WORD	pbase;			/* base of run time stack			*/
+	int	pstklen;			/* stack length						*/
+	WORD	plimit;			/* lowest extent of stack			*/
+	char	pname[PNMLEN];	/* process name						*/
+	int	pargs;				/* initial number of arguments		*/
+	WORD	paddr;			/* initial code address				*/
+	WORD	pnxtkin;		/* next-of-kin notified of death	*/
+	Bool	ptcpumode;		/* proc is in TCP urgent mode		*/
+	short	pdevs[2];		/* devices to close upon exit		*/
+	int	fildes[_NFILE];		/* file - device translation		*/
+	int	ppagedev;			/* pageing dgram device				*/
+	int	pwaitret;			/* return value from wait	 		*/
+	int pinh;				/* inherited process priority		*/
+	int plocks;				/* locks currently held		 		*/
+	int pwaitlock;			/* lock currently waiting for		*/
+	int plwaittype;			/* READ, WRITE, or NONE	*/
+	locknode *pdellocks;	/* locks prev held, now deleted 	*/
 };
 
 

@@ -7,12 +7,76 @@
 #include <lock.h>
 #include <stdio.h>
 
+LOCAL int isnotheld(int ldes);
+LOCAL void wakeup(int ldes);
+
 /* releaseall - release all the specified locks, waking up one waiting process */
 
 SYSCALL releaseall(int numlocks, int locks)
 {
     STATWORD ps;
     register struct lentry *lptr;
+    int *lock;
+    int retval = OK;
 
     disable(ps);
+    for( ; numlocks>0; numlocks--){
+        lock = (int *)(&locks) + (numlocks-1);
+        if (isbadlock(lock) || isnotheld(lock))
+        {
+            retval = SYSERR;
+        } else
+        {
+            wakeupwp(lock);
+        }
+    }
+    resched();
+    restore(ps);
+    return(retval);
+}
+
+LOCAL int isnotheld(int ldes)
+{
+    struct pentry *pptr;
+    pptr = &proctab[currpid];
+
+    locknode *lock;
+    lock = pptr->plocks;
+    while (lock!=NULL)
+    {
+        if (lock->ldes==ldes)
+            return FALSE;
+        lock = lock->next;
+    }
+    return TRUE;
+}
+
+LOCAL void wakeup(int ldes)
+{
+    struct lentry *lptr;
+    lptr = &locktab[ldes];
+    int lprio = lptr->lprio;
+
+    int pid = q[lptr->lqhead].qnext;
+    unsigned long wst = q[pid].qwst;
+
+    while (pid != lptr->lqtail && q[pid].qkey==lprio)
+    {
+        if (q[pid].qlwaittype == WAITREAD)
+        {
+            if (wst - q[pid].qwst <= 400)
+            {
+                while (pid != lptr->lqtail && q[pid].qlwaittype == WAITREAD)
+                {
+                    ready(pid, RESCHNO);
+                    pid = q[pid].qnext;
+                }
+                return;
+            }
+            break;
+        }
+        pid = q[pid].qnext;
+    }
+    ready(q[lptr->lqhead].qnext, RESCHNO);
+    return;
 }

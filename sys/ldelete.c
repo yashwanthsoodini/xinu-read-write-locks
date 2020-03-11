@@ -4,7 +4,7 @@
 #include <kernel.h>
 #include <proc.h>
 #include <q.h>
-#include <sem.h>
+#include <lock.h>
 #include <stdio.h>
 
 /* ldelete -- delete a lock by releasing its table entry */

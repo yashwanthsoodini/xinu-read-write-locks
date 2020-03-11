@@ -28,8 +28,7 @@ struct  lentry  {       /* lock table entry                                 */
     int lqhead;         /* q index of head of wait list                     */
     int lqtail;         /* q index of tail of wait list                     */
     int lprio;          /* max priority among waiting processes             */
-    procnode *lholders; /* head of list of processes that now hold the lock */
-    procnode *lprevhld; /* head of list of processes that released the lock */
+    procnode *lprocs;   /* head of list of processes that used the lock     */
     int lholdtype;      /* the type READER,WRITER or NONE of lock holder(s) */
 };
 extern struct lentry locktab[];

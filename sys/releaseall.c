@@ -57,19 +57,24 @@ LOCAL void wakeup(int ldes)
     lptr = &locktab[ldes];
     int lprio = lptr->lprio;
 
+    struct pentry *pptr;
+
     int pid = q[lptr->lqhead].qnext;
     unsigned long wst = q[pid].qwst;
 
     while (pid != lptr->lqtail && q[pid].qkey==lprio)
     {
-        if (q[pid].qlwaittype == WAITREAD)
+        pptr = &proctab[pid];
+
+        if (pptr->plwaittype == READ)
         {
             if (wst - q[pid].qwst <= 400)
             {
-                while (pid != lptr->lqtail && q[pid].qlwaittype == WAITREAD)
+                while (pid != lptr->lqtail && pptr->plwaittype == READ)
                 {
                     ready(pid, RESCHNO);
                     pid = q[pid].qnext;
+                    pptr = &proctab[pid];
                 }
                 return;
             }

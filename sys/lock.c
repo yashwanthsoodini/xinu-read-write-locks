@@ -37,6 +37,7 @@ SYSCALL lock(int ldes, int type, int priority)
         pptr->pwaitlock = ldes;
         pptr->plwaittype = type;
         insert(currpid, lptr->lqhead, priority);
+        lptr->lprio = q[q[lptr->lqhead].qnext].qkey;
         if(priority > lptr->lprio)
             lptr->lprio = priority;
         pptr->pwaitret = OK;
@@ -57,8 +58,6 @@ SYSCALL lock(int ldes, int type, int priority)
             }
             addtoplocks(ldes);
         }
-        pptr->pwaitlock = -1;
-        pptr->plwaittype = NONE;
         restore(ps);
         return pptr->pwaitret;
     }
@@ -113,11 +112,11 @@ LOCAL void addtolprocs(int ldes)
 
 LOCAL void addtoplocks(int ldes)
 {
-    struct lentry *pptr;
+    struct pentry *pptr;
     pptr = &proctab[currpid];
     locknode *lock = (locknode *)malloc(sizeof(locknode));
     lock->ldes = ldes;
-    lock->next = pptr->lprocs;
-    pptr->lprocs = lock;
+    lock->next = pptr->plocks;
+    pptr->plocks = lock;
     return;
 }

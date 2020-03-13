@@ -23,13 +23,13 @@ typedef struct proclist{    /* a node in a linked list of processes */
     struct proclist *next;
 } procnode;
 
-struct  lentry  {       /* lock table entry                                 */
-    char lstate;        /* the state LFREE or LUSED                         */
-    int lqhead;         /* q index of head of wait list                     */
-    int lqtail;         /* q index of tail of wait list                     */
-    int lprio;          /* max priority among waiting processes             */
-    procnode *lprocs;   /* head of list of processes that used the lock     */
-    int lholdtype;      /* the type READER,WRITER or NONE of lock holder(s) */
+struct  lentry  {       /* lock table entry                                  */
+    char lstate;        /* the state LFREE or LUSED                          */
+    int lqhead;         /* q index of head of wait list                      */
+    int lqtail;         /* q index of tail of wait list                      */
+    int lprio;          /* max priority among waiting processes              */
+    procnode *lprocs;   /* head of list of processes that requested the lock */
+    int lholdtype;      /* the type READER,WRITER or NONE of lock holder(s)  */
 };
 extern struct lentry locktab[];
 extern int nextlock;

@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 LOCAL int isnotheld(int ldes);
+LOCAL void remplock(int ldes);
 LOCAL void wakeup(int ldes);
 
 /* releaseall - release all the specified locks, waking up one waiting process */
@@ -16,18 +17,23 @@ SYSCALL releaseall(int numlocks, int locks)
 {
     STATWORD ps;
     register struct lentry *lptr;
-    int *lock;
+    int *ldes;
     int retval = OK;
+
+    struct lentry *lptr;
 
     disable(ps);
     for( ; numlocks>0; numlocks--){
-        lock = (int *)(&locks) + (numlocks-1);
-        if (isbadlock(lock) || isnotheld(lock))
+        ldes = (int *)(&locks) + (numlocks-1);
+        remplock(*ldes);
+        if (isbadlock(*ldes) || isnotheld(*ldes))
         {
             retval = SYSERR;
         } else
         {
-            wakeupwp(lock);
+            lptr = &locktab[*ldes];
+            lptr->lholdtype = NONE;
+            wakeupwp(*ldes);
         }
     }
     resched();
@@ -51,6 +57,34 @@ LOCAL int isnotheld(int ldes)
     return TRUE;
 }
 
+LOCAL void remplock(int ldes)
+{
+    struct pentry *pptr;
+    pptr = &proctab[currpid];
+
+    locknode *curr = pptr->plocks;
+
+    if (curr!=NULL && curr->ldes == ldes)
+    {
+        pptr->plocks = curr->next;
+        free(curr);
+        return;
+    }
+
+    locknode *prev;
+    while (curr!=NULL && curr->ldes!=ldes)
+    {
+        prev = curr;
+        curr = curr->next;
+    }
+    
+    if(curr == NULL) return;
+
+    prev->next = curr->next;
+    free(curr);
+    return;
+}
+
 LOCAL void wakeup(int ldes)
 {
     struct lentry *lptr;
@@ -72,16 +106,24 @@ LOCAL void wakeup(int ldes)
             {
                 while (pid != lptr->lqtail && pptr->plwaittype == READ)
                 {
+                    struct qent *mptr;
+                    mptr = &q[pid];
+                    int temp = mptr->qnext;
+                    q[mptr->qprev].qnext = mptr->qnext;
+                    q[mptr->qnext].qprev = mptr->qprev;
+                    pptr->pwaitlock = -1;
+                    pptr->plwaittype = NONE;
                     ready(pid, RESCHNO);
-                    pid = q[pid].qnext;
+                    pid = temp;
                     pptr = &proctab[pid];
                 }
+                lptr->lprio = q[q[lptr->lqhead].qnext].qkey;
                 return;
             }
             break;
         }
         pid = q[pid].qnext;
     }
-    ready(q[lptr->lqhead].qnext, RESCHNO);
+    ready(getfirst(lptr->lqhead), RESCHNO);
     return;
 }
